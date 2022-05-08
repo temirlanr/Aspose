@@ -4,7 +4,7 @@
     {
         public static async Task Main(string[] args)
         {
-            ImageProcessor processor = new ImageProcessor(ComparisonAlgorithm.RGB, 0, 5);
+            IImageProcessor processor = new ImageProcessor(ComparisonAlgorithm.RGB, 0, 8, 1, 150);
             Pen pen = new Pen(Color.Red, 5);
 
             string fileName1 = "./Samples/Sample_1_A.jpg";
@@ -15,7 +15,9 @@
 
             await foreach (var cluster in processor.CompareTwoImagesAsync(fileName1, fileName2))
             {
-                Rectangle rectangle = new Rectangle(cluster.LeftPoint - 5, cluster.UpperPoint - 5, cluster.RightPoint - cluster.LeftPoint + 10, cluster.UpperPoint - cluster.LowerPoint + 10);
+                Console.WriteLine(cluster.ToString());
+
+                Rectangle rectangle = new Rectangle(cluster.LeftPoint - 5, cluster.UpperPoint - 5, cluster.RightPoint - cluster.LeftPoint + 10, cluster.LowerPoint - cluster.UpperPoint + 10);
 
                 using (Graphics g = Graphics.FromImage(img1))
                 {
@@ -28,8 +30,8 @@
                 }
             }
 
-            img1.Save("result1.jpg");
-            img2.Save("result2.jpg");
+            img1.Save("result1A.jpg");
+            img2.Save("result1B.jpg");
         }
     }
 }

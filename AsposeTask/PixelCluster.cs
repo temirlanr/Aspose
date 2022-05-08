@@ -26,11 +26,20 @@ namespace AsposeTask
 
         public void SetBorders()
         {
-            UpperPoint = YCoordinates.Max();
-            LowerPoint = YCoordinates.Min();
+            UpperPoint = YCoordinates.Min();
+            LowerPoint = YCoordinates.Max();
             RightPoint = XCoordinates.Max();
             LeftPoint = XCoordinates.Min();
             Size = XCoordinates.Count;
+        }
+
+        public override string ToString()
+        {
+            return $"Upper point: {UpperPoint}, \n" +
+                $"Lower point: {LowerPoint}, \n" +
+                $"Left point: {LeftPoint}, \n" +
+                $"Right point: {RightPoint}, \n" +
+                $"Size: {Size}.";
         }
     }
 }

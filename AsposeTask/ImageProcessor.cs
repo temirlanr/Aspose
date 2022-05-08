@@ -7,13 +7,19 @@ using System.Threading.Tasks;
 
 namespace AsposeTask
 {
-    public class ImageProcessor
+    public enum ComparisonAlgorithm
     {
-        public ComparisonAlgorithm Algorithm { get; private set; }
-        public int NumberOfDiff { get; private set; }
-        public int ErrorTolerance { get; private set; }
-        public int DepthOfDFS { get; private set; }
-        public int SizeOfDiff { get; private set; }
+        ARGB,
+        RGB
+    }
+
+    public class ImageProcessor : IImageProcessor
+    {
+        public ComparisonAlgorithm Algorithm { get; set; }
+        public int NumberOfDiff { get; set; }
+        public int ErrorTolerance { get; set; }
+        public int DepthOfDFS { get; set; }
+        public int SizeOfDiff { get; set; }
 
         public ImageProcessor
             (ComparisonAlgorithm algorithm = ComparisonAlgorithm.RGB,
@@ -47,6 +53,11 @@ namespace AsposeTask
         {
             Bitmap img1 = new Bitmap(fileName1);
             Bitmap img2 = new Bitmap(fileName2);
+            
+            if(img1.Width != img2.Width || img1.Height != img2.Height)
+            {
+                throw new ArgumentException("Images should be of the same size pixel-wise.");
+            }
 
             bool[,] isVisited = new bool[img1.Width, img1.Height];
             bool[,] isDifferent = DetectDifferences(img1, img2);
@@ -57,7 +68,7 @@ namespace AsposeTask
             {
                 for(int j = 5; j < img1.Height - 5; j++)
                 {
-                    if(isDifferent[i, j] && !isVisited[i, j] && NumberOfDiff > 0 && size < NumberOfDiff)
+                    if(isDifferent[i, j] && !isVisited[i, j])
                     {
                         PixelCluster cluster = new PixelCluster();
                         await Task.Run(() => DFS(cluster, isDifferent, i, j, isVisited));
@@ -86,7 +97,7 @@ namespace AsposeTask
             {
                 for (int j = 5; j < img1.Height - 5; j++)
                 {
-                    if (isDifferent[i, j] && !isVisited[i, j] && NumberOfDiff > 0 && result.Count < NumberOfDiff)
+                    if (isDifferent[i, j] && !isVisited[i, j])
                     {
                         PixelCluster cluster = new PixelCluster();
                         DFS(cluster, isDifferent, i, j, isVisited);
@@ -102,7 +113,7 @@ namespace AsposeTask
             return result;
         }
 
-        private bool[,] DetectDifferences(Bitmap img1, Bitmap img2)
+        public bool[,] DetectDifferences(Bitmap img1, Bitmap img2)
         {
             bool[,] isDifferent = new bool[img1.Width, img1.Height];
 
@@ -125,7 +136,7 @@ namespace AsposeTask
             return (row >= 0) && (row < isDifferent.GetLength(0)) && (col >= 0) && (col < isDifferent.GetLength(1)) && (isDifferent[row, col] && !visited[row, col]);
         }
 
-        private void DFS(PixelCluster cluster, bool[,] isDifferent, int row, int col, bool[,] isVisited)
+        public void DFS(PixelCluster cluster, bool[,] isDifferent, int row, int col, bool[,] isVisited)
         {
             int[] rowNbr = new int[] { -DepthOfDFS, -DepthOfDFS, -DepthOfDFS, 0, 0, DepthOfDFS, DepthOfDFS, DepthOfDFS };
             int[] colNbr = new int[] { -DepthOfDFS, 0, DepthOfDFS, -DepthOfDFS, DepthOfDFS, -DepthOfDFS, 0, DepthOfDFS };
@@ -143,11 +154,5 @@ namespace AsposeTask
                 }
             }
         }
-    }
-
-    public enum ComparisonAlgorithm
-    {
-        ARGB,
-        RGB
     }
 }
