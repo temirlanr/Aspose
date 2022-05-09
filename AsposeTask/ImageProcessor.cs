@@ -7,12 +7,24 @@ using System.Threading.Tasks;
 
 namespace AsposeTask
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum ComparisonAlgorithm
     {
+        /// <summary>
+        /// 
+        /// </summary>
         ARGB,
+        /// <summary>
+        /// Only RGB values are taken
+        /// </summary>
         RGB
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class ImageProcessor : IImageProcessor
     {
         public ComparisonAlgorithm Algorithm { get; set; }
@@ -20,14 +32,30 @@ namespace AsposeTask
         public int ErrorTolerance { get; set; }
         public int DepthOfDFS { get; set; }
         public int SizeOfDiff { get; set; }
+        private readonly string fileName1;
+        private readonly string fileName2;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fileName1"></param>
+        /// <param name="fileName2"></param>
+        /// <param name="algorithm"></param>
+        /// <param name="numberOfDiff"></param>
+        /// <param name="errorTolerance"></param>
+        /// <param name="depthOfDFS"></param>
+        /// <param name="sizeOfDiff"></param>
         public ImageProcessor
-            (ComparisonAlgorithm algorithm = ComparisonAlgorithm.RGB,
+            (string fileName1,
+            string fileName2,
+            ComparisonAlgorithm algorithm = ComparisonAlgorithm.RGB,
             int numberOfDiff = 0,
-            int errorTolerance = 5,
+            int errorTolerance = 8,
             int depthOfDFS = 1,
-            int sizeOfDiff = 100)
+            int sizeOfDiff = 150)
         {
+            this.fileName1 = fileName1;
+            this.fileName2 = fileName2;
             Algorithm = algorithm;
             NumberOfDiff = numberOfDiff;
             ErrorTolerance = errorTolerance;
@@ -49,18 +77,88 @@ namespace AsposeTask
             }
         };
 
-        public async IAsyncEnumerable<PixelCluster> CompareTwoImagesAsync(string fileName1, string fileName2)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="resultFileName1"></param>
+        /// <param name="resultFileName2"></param>
+        /// <returns></returns>
+        public async Task StartAsync(string resultFileName1, string resultFileName2)
         {
+            Pen pen = new Pen(Color.Red, 5);
             Bitmap img1 = new Bitmap(fileName1);
             Bitmap img2 = new Bitmap(fileName2);
-            
+
+            await foreach (var cluster in CompareTwoImagesAsync(img1, img2))
+            {
+                Console.WriteLine(cluster.ToString());
+
+                Rectangle rectangle = new Rectangle(cluster.LeftPoint - 5, cluster.UpperPoint - 5, cluster.RightPoint - cluster.LeftPoint + 10, cluster.LowerPoint - cluster.UpperPoint + 10);
+
+                using (Graphics g = Graphics.FromImage(img1))
+                {
+                    g.DrawRectangle(pen, rectangle);
+                }
+
+                using (Graphics g = Graphics.FromImage(img2))
+                {
+                    g.DrawRectangle(pen, rectangle);
+                }
+            }
+
+            img1.Save(resultFileName1);
+            img2.Save(resultFileName2);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="resultFileName1"></param>
+        /// <param name="resultFileName2"></param>
+        public void Start(string resultFileName1, string resultFileName2)
+        {
+            Pen pen = new Pen(Color.Red, 5);
+            Bitmap img1 = new Bitmap(fileName1);
+            Bitmap img2 = new Bitmap(fileName2);
+            var clusters = CompareTwoImages(img1, img2);
+
+            foreach (var cluster in clusters)
+            {
+                Console.WriteLine(cluster.ToString());
+
+                Rectangle rectangle = new Rectangle(cluster.LeftPoint - 5, cluster.UpperPoint - 5, cluster.RightPoint - cluster.LeftPoint + 10, cluster.LowerPoint - cluster.UpperPoint + 10);
+
+                using (Graphics g = Graphics.FromImage(img1))
+                {
+                    g.DrawRectangle(pen, rectangle);
+                }
+
+                using (Graphics g = Graphics.FromImage(img2))
+                {
+                    g.DrawRectangle(pen, rectangle);
+                }
+            }
+
+            img1.Save(resultFileName1);
+            img2.Save(resultFileName2);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="img1"></param>
+        /// <param name="img2"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public async IAsyncEnumerable<PixelCluster> CompareTwoImagesAsync(Bitmap img1, Bitmap img2)
+        {
             if(img1.Width != img2.Width || img1.Height != img2.Height)
             {
                 throw new ArgumentException("Images should be of the same size pixel-wise.");
             }
 
             bool[,] isVisited = new bool[img1.Width, img1.Height];
-            bool[,] isDifferent = DetectDifferences(img1, img2);
+            bool[,] isDifferent =  await Task.Run(() => DetectDifferences(img1, img2));
 
             int size = 0;
 
@@ -68,25 +166,41 @@ namespace AsposeTask
             {
                 for(int j = 5; j < img1.Height - 5; j++)
                 {
-                    if(isDifferent[i, j] && !isVisited[i, j])
+                    if(NumberOfDiff > 0)
+                    {
+                        if(size >= NumberOfDiff)
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (isDifferent[i, j] && !isVisited[i, j])
                     {
                         PixelCluster cluster = new PixelCluster();
                         await Task.Run(() => DFS(cluster, isDifferent, i, j, isVisited));
                         cluster.SetBorders();
                         if (cluster.Size > SizeOfDiff)
                         {
-                            yield return cluster;
                             size += 1;
+                            yield return cluster;
                         }
                     }
                 }
             }
         }
 
-        public IEnumerable<PixelCluster> CompareTwoImages(string fileName1, string fileName2)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="img1"></param>
+        /// <param name="img2"></param>
+        /// <returns></returns>
+        public IEnumerable<PixelCluster> CompareTwoImages(Bitmap img1, Bitmap img2)
         {
-            Bitmap img1 = new Bitmap(fileName1);
-            Bitmap img2 = new Bitmap(fileName2);
+            if (img1.Width != img2.Width || img1.Height != img2.Height)
+            {
+                throw new ArgumentException("Images should be of the same size pixel-wise.");
+            }
 
             List<PixelCluster> result = new List<PixelCluster>();
 
@@ -97,6 +211,14 @@ namespace AsposeTask
             {
                 for (int j = 5; j < img1.Height - 5; j++)
                 {
+                    if (NumberOfDiff > 0)
+                    {
+                        if (result.Count >= NumberOfDiff)
+                        {
+                            continue;
+                        }
+                    }
+
                     if (isDifferent[i, j] && !isVisited[i, j])
                     {
                         PixelCluster cluster = new PixelCluster();
@@ -113,6 +235,12 @@ namespace AsposeTask
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="img1"></param>
+        /// <param name="img2"></param>
+        /// <returns></returns>
         public bool[,] DetectDifferences(Bitmap img1, Bitmap img2)
         {
             bool[,] isDifferent = new bool[img1.Width, img1.Height];
@@ -131,11 +259,27 @@ namespace AsposeTask
             return isDifferent;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="isDifferent"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="visited"></param>
+        /// <returns></returns>
         private bool IsSafe(bool[,] isDifferent, int row, int col, bool[,] visited)
         {
             return (row >= 0) && (row < isDifferent.GetLength(0)) && (col >= 0) && (col < isDifferent.GetLength(1)) && (isDifferent[row, col] && !visited[row, col]);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cluster"></param>
+        /// <param name="isDifferent"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="isVisited"></param>
         public void DFS(PixelCluster cluster, bool[,] isDifferent, int row, int col, bool[,] isVisited)
         {
             int[] rowNbr = new int[] { -DepthOfDFS, -DepthOfDFS, -DepthOfDFS, 0, 0, DepthOfDFS, DepthOfDFS, DepthOfDFS };

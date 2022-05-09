@@ -24,6 +24,9 @@ namespace AsposeTask
             YCoordinates = new List<int>();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SetBorders()
         {
             UpperPoint = YCoordinates.Min();
@@ -33,13 +36,17 @@ namespace AsposeTask
             Size = XCoordinates.Count;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"Upper point: {UpperPoint}, \n" +
                 $"Lower point: {LowerPoint}, \n" +
                 $"Left point: {LeftPoint}, \n" +
                 $"Right point: {RightPoint}, \n" +
-                $"Size: {Size}.";
+                $"Size: {Size}. \n";
         }
     }
 }
