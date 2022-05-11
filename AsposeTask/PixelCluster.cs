@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace AsposeTask
 {
+    /// <summary>
+    /// Pixel Clusters for better working with different pixels in two images
+    /// </summary>
     public class PixelCluster
     {
         public int UpperPoint { get; private set; }
@@ -25,7 +28,7 @@ namespace AsposeTask
         }
 
         /// <summary>
-        /// 
+        /// Sets borders for Clusters
         /// </summary>
         public void SetBorders()
         {
@@ -36,10 +39,6 @@ namespace AsposeTask
             Size = XCoordinates.Count;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             return $"Upper point: {UpperPoint}, \n" +

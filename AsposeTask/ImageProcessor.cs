@@ -7,55 +7,60 @@ using System.Threading.Tasks;
 
 namespace AsposeTask
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public enum ComparisonAlgorithm
     {
         /// <summary>
-        /// 
+        /// Compares Pixels by 4 values: A - Transparency value, R - Red value, G - Green value, B - Blue value
         /// </summary>
         ARGB,
         /// <summary>
-        /// Only RGB values are taken
+        /// Compares Pixels by 3 values: R - Red value, G - Green value, B - Blue value
         /// </summary>
         RGB
     }
 
     /// <summary>
-    /// 
+    /// Implementation of IImageProcessor interface that compares two same images for differences
     /// </summary>
+    /// <remarks>
+    /// Images must be of the same size
+    /// </remarks>
     public class ImageProcessor : IImageProcessor
     {
-        public ComparisonAlgorithm Algorithm { get; set; }
-        public int NumberOfDiff { get; set; }
-        public int ErrorTolerance { get; set; }
-        public int DepthOfDFS { get; set; }
-        public int SizeOfDiff { get; set; }
-        private readonly string fileName1;
-        private readonly string fileName2;
-
         /// <summary>
-        /// 
+        /// Specifies which Formula to use when comparing images
         /// </summary>
-        /// <param name="fileName1"></param>
-        /// <param name="fileName2"></param>
-        /// <param name="algorithm"></param>
-        /// <param name="numberOfDiff"></param>
-        /// <param name="errorTolerance"></param>
-        /// <param name="depthOfDFS"></param>
-        /// <param name="sizeOfDiff"></param>
+        public ComparisonAlgorithm Algorithm { get; set; }
+        /// <summary>
+        /// Specifies how many differences to detect
+        /// </summary>
+        /// <remarks>
+        /// Choose 0 or negative value for no maximum
+        /// </remarks>
+        public int NumberOfDiff { get; set; }
+        /// <summary>
+        /// Specifies the Error Tolerance when comparing images
+        /// </summary>
+        /// <remarks>
+        /// The lower it is the more differences it will detect. Preferred values are >5, otherwise there is a chance of Stack Overflow.
+        /// </remarks>
+        public int ErrorTolerance { get; set; }
+        /// <summary>
+        /// Specifies on how far should be every step of Depth First Search
+        /// </summary>
+        public int DepthOfDFS { get; set; }
+        /// <summary>
+        /// Specifies the minimum size of regions that should be detected
+        /// </summary>
+        public int SizeOfDiff { get; set; }
+
         public ImageProcessor
-            (string fileName1,
-            string fileName2,
-            ComparisonAlgorithm algorithm = ComparisonAlgorithm.RGB,
+            (ComparisonAlgorithm algorithm = ComparisonAlgorithm.RGB,
             int numberOfDiff = 0,
             int errorTolerance = 8,
             int depthOfDFS = 1,
             int sizeOfDiff = 150)
         {
-            this.fileName1 = fileName1;
-            this.fileName2 = fileName2;
             Algorithm = algorithm;
             NumberOfDiff = numberOfDiff;
             ErrorTolerance = errorTolerance;
@@ -78,16 +83,27 @@ namespace AsposeTask
         };
 
         /// <summary>
-        /// 
+        /// Starts the comparison algorithm and saves resultant files into local drive
         /// </summary>
+        /// <remarks>
+        /// You might want to use this method for better performance
+        /// </remarks>
+        /// <param name="fileName1"></param>
+        /// <param name="fileName2"></param>
         /// <param name="resultFileName1"></param>
         /// <param name="resultFileName2"></param>
-        /// <returns></returns>
-        public async Task StartAsync(string resultFileName1, string resultFileName2)
+        /// <returns><see cref="Task"></see></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public async Task StartAsync(string fileName1, string fileName2, string resultFileName1, string resultFileName2)
         {
             Pen pen = new Pen(Color.Red, 5);
             Bitmap img1 = new Bitmap(fileName1);
             Bitmap img2 = new Bitmap(fileName2);
+
+            if (img1.Width != img2.Width || img1.Height != img2.Height)
+            {
+                throw new ArgumentException("Images should be of the same size pixel-wise.");
+            }
 
             await foreach (var cluster in CompareTwoImagesAsync(img1, img2))
             {
@@ -111,15 +127,66 @@ namespace AsposeTask
         }
 
         /// <summary>
-        /// 
+        /// Starts the comparison algorithm and saves resultant files into local drive
         /// </summary>
+        /// <remarks>
+        /// You might want to use this method for better performance
+        /// </remarks>
+        /// <param name="img1"></param>
+        /// <param name="img2"></param>
         /// <param name="resultFileName1"></param>
         /// <param name="resultFileName2"></param>
-        public void Start(string resultFileName1, string resultFileName2)
+        /// <returns><see cref="Task"></see></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public async Task StartAsync(Bitmap img1, Bitmap img2, string resultFileName1, string resultFileName2)
+        {
+            if (img1.Width != img2.Width || img1.Height != img2.Height)
+            {
+                throw new ArgumentException("Images should be of the same size pixel-wise.");
+            }
+
+            Pen pen = new Pen(Color.Red, 5);
+
+            await foreach (var cluster in CompareTwoImagesAsync(img1, img2))
+            {
+                Console.WriteLine(cluster.ToString());
+
+                Rectangle rectangle = new Rectangle(cluster.LeftPoint - 5, cluster.UpperPoint - 5, cluster.RightPoint - cluster.LeftPoint + 10, cluster.LowerPoint - cluster.UpperPoint + 10);
+
+                using (Graphics g = Graphics.FromImage(img1))
+                {
+                    g.DrawRectangle(pen, rectangle);
+                }
+
+                using (Graphics g = Graphics.FromImage(img2))
+                {
+                    g.DrawRectangle(pen, rectangle);
+                }
+            }
+
+            img1.Save(resultFileName1);
+            img2.Save(resultFileName2);
+        }
+
+        /// <summary>
+        /// Starts the comparison algorithm and saves resultant files into local drive
+        /// </summary>
+        /// <param name="fileName1"></param>
+        /// <param name="fileName2"></param>
+        /// <param name="resultFileName1"></param>
+        /// <param name="resultFileName2"></param>
+        /// <exception cref="ArgumentException"></exception>
+        public void Start(string fileName1, string fileName2, string resultFileName1, string resultFileName2)
         {
             Pen pen = new Pen(Color.Red, 5);
             Bitmap img1 = new Bitmap(fileName1);
             Bitmap img2 = new Bitmap(fileName2);
+
+            if (img1.Width != img2.Width || img1.Height != img2.Height)
+            {
+                throw new ArgumentException("Images should be of the same size pixel-wise.");
+            }
+
             var clusters = CompareTwoImages(img1, img2);
 
             foreach (var cluster in clusters)
@@ -144,19 +211,54 @@ namespace AsposeTask
         }
 
         /// <summary>
-        /// 
+        /// Starts the comparison algorithm and saves resultant files into local drive
         /// </summary>
         /// <param name="img1"></param>
         /// <param name="img2"></param>
-        /// <returns></returns>
+        /// <param name="resultFileName1"></param>
+        /// <param name="resultFileName2"></param>
         /// <exception cref="ArgumentException"></exception>
-        public async IAsyncEnumerable<PixelCluster> CompareTwoImagesAsync(Bitmap img1, Bitmap img2)
+        public void Start(Bitmap img1, Bitmap img2, string resultFileName1, string resultFileName2)
         {
-            if(img1.Width != img2.Width || img1.Height != img2.Height)
+            if (img1.Width != img2.Width || img1.Height != img2.Height)
             {
                 throw new ArgumentException("Images should be of the same size pixel-wise.");
             }
 
+            Pen pen = new Pen(Color.Red, 5);
+
+            foreach (var cluster in CompareTwoImages(img1, img2))
+            {
+                Console.WriteLine(cluster.ToString());
+
+                Rectangle rectangle = new Rectangle(cluster.LeftPoint - 5, cluster.UpperPoint - 5, cluster.RightPoint - cluster.LeftPoint + 10, cluster.LowerPoint - cluster.UpperPoint + 10);
+
+                using (Graphics g = Graphics.FromImage(img1))
+                {
+                    g.DrawRectangle(pen, rectangle);
+                }
+
+                using (Graphics g = Graphics.FromImage(img2))
+                {
+                    g.DrawRectangle(pen, rectangle);
+                }
+            }
+
+            img1.Save(resultFileName1);
+            img2.Save(resultFileName2);
+        }
+
+        /// <summary>
+        /// Compares images based on chosen comparison algorithm
+        /// </summary>
+        /// <remarks>
+        /// You might want to use this method for better performance
+        /// </remarks>
+        /// <param name="img1"></param>
+        /// <param name="img2"></param>
+        /// <returns><see cref="IAsyncEnumerable{PixelCluster}"/></returns>
+        public async IAsyncEnumerable<PixelCluster> CompareTwoImagesAsync(Bitmap img1, Bitmap img2)
+        {
             bool[,] isVisited = new bool[img1.Width, img1.Height];
             bool[,] isDifferent =  await Task.Run(() => DetectDifferences(img1, img2));
 
@@ -190,18 +292,13 @@ namespace AsposeTask
         }
 
         /// <summary>
-        /// 
+        /// Compares images based on chosen comparison algorithm
         /// </summary>
         /// <param name="img1"></param>
         /// <param name="img2"></param>
-        /// <returns></returns>
+        /// <returns><see cref="IEnumerable{PixelCluster}"/></returns>
         public IEnumerable<PixelCluster> CompareTwoImages(Bitmap img1, Bitmap img2)
         {
-            if (img1.Width != img2.Width || img1.Height != img2.Height)
-            {
-                throw new ArgumentException("Images should be of the same size pixel-wise.");
-            }
-
             List<PixelCluster> result = new List<PixelCluster>();
 
             bool[,] isVisited = new bool[img1.Width, img1.Height];
@@ -236,11 +333,11 @@ namespace AsposeTask
         }
 
         /// <summary>
-        /// 
+        /// This method is used to detect the differences and return 2D array of booleans representing each pixel
         /// </summary>
         /// <param name="img1"></param>
         /// <param name="img2"></param>
-        /// <returns></returns>
+        /// <returns><see cref="Array"/> of type <see cref="bool"/></returns>
         public bool[,] DetectDifferences(Bitmap img1, Bitmap img2)
         {
             bool[,] isDifferent = new bool[img1.Width, img1.Height];
@@ -259,28 +356,14 @@ namespace AsposeTask
             return isDifferent;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="isDifferent"></param>
-        /// <param name="row"></param>
-        /// <param name="col"></param>
-        /// <param name="visited"></param>
-        /// <returns></returns>
+        // Checker for DFS
         private bool IsSafe(bool[,] isDifferent, int row, int col, bool[,] visited)
         {
             return (row >= 0) && (row < isDifferent.GetLength(0)) && (col >= 0) && (col < isDifferent.GetLength(1)) && (isDifferent[row, col] && !visited[row, col]);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cluster"></param>
-        /// <param name="isDifferent"></param>
-        /// <param name="row"></param>
-        /// <param name="col"></param>
-        /// <param name="isVisited"></param>
-        public void DFS(PixelCluster cluster, bool[,] isDifferent, int row, int col, bool[,] isVisited)
+        // Depth First Search
+        private void DFS(PixelCluster cluster, bool[,] isDifferent, int row, int col, bool[,] isVisited)
         {
             int[] rowNbr = new int[] { -DepthOfDFS, -DepthOfDFS, -DepthOfDFS, 0, 0, DepthOfDFS, DepthOfDFS, DepthOfDFS };
             int[] colNbr = new int[] { -DepthOfDFS, 0, DepthOfDFS, -DepthOfDFS, DepthOfDFS, -DepthOfDFS, 0, DepthOfDFS };
