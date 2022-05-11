@@ -18,7 +18,7 @@ Regarding the algorithm, it is pretty straightforward:
 * I created a PixelCluster object for better working with those areas.
 * Recursive Depth First Search algorithm is implemented with clustering pixel locations into PixelCluster objects.
 * PixelCluster objects returned to main method that writes all the info about those clusters and saves 2 images into local drive that have differences surrounded by red rectangles.
-* There are to modes: synchronous and asynchronous, so you can choose. For better performance I recommend the asynchronous. Also asynchronous mode works with IAsyncEnumerable, which outputs PixelCluster objects "on the fly", meaning you see info about them as soon as they are detected.
+* There are two modes: synchronous and asynchronous, so you can choose. For better performance I recommend the asynchronous. Also asynchronous mode works with IAsyncEnumerable, which outputs PixelCluster objects "on the fly", meaning you see info about them as soon as they are detected.
 
 ## API Reference and Documentation is provided within the code
 
@@ -34,12 +34,14 @@ Regarding the algorithm, it is pretty straightforward:
 * Exception handling. For example, the Stack Overflow can easily happen when not configured properly
 * Tests didn't cover all of the functionality
 * Works only on Windows
+* Uses more space than I expected
 
 ## Possible ways to improve
 
-It was my first project on image processing, so it was, indeed, very interesting to work on it. Also, I understand that there probably are many mistakes that an experienced developer would easily point out. I, myself, could point out these:
+It was my first project on image processing, so it was, indeed, very hard and interesting to work on it. Also, I understand that there probably are many mistakes that an experienced developer would easily point out. I, myself, think that it could be improved by:
 * Better implementation of asynchronous methods
-* Better design
+* Better design (immutablity included)
 * Research on how to work with images, colors, color spaces and files in general
 * Think of an algorithm that wouldn't use that much space
 * Exception handling and proper validation
+* Publish it as a Library
