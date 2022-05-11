@@ -57,6 +57,9 @@ namespace AsposeTask
         /// <summary>
         /// Regular Constructor where you need to specify the configuration by yourself
         /// </summary>
+        /// <remarks>
+        /// For better performance it is recommended to use default parameters, but feel free to change them if you are not satisfied with a result
+        /// </remarks>
         /// <param name="algorithm"></param>
         /// <param name="maxNumberOfDiff"></param>
         /// <param name="errorTolerance"></param>
