@@ -43,3 +43,4 @@ It was my first project on image processing, so it was, indeed, very interesting
 * Research on how to work with images, colors, color spaces and files in general
 * Think of an algorithm that wouldn't use that much space
 * Exception handling and proper validation
+* Publish it as a Library
