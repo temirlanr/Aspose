@@ -34,6 +34,7 @@ Regarding the algorithm, it is pretty straightforward:
 * Exception handling. For example, the Stack Overflow can easily happen when not configured properly
 * Tests didn't cover all of the functionality
 * Works only on Windows
+* Uses more space than I expected
 
 ## Possible ways to improve
 
