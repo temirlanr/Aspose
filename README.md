@@ -37,7 +37,7 @@ Regarding the algorithm, it is pretty straightforward:
 
 ## Possible ways to improve
 
-It was my first project on image processing, so it was, indeed, very interesting to work on it. Also, I understand that there probably are many mistakes that an experienced developer would easily point out. I, myself, could point out these:
+It was my first project on image processing, so it was, indeed, very hard and interesting to work on it. Also, I understand that there probably are many mistakes that an experienced developer would easily point out. I, myself, could point out these:
 * Better implementation of asynchronous methods
 * Better design
 * Research on how to work with images, colors, color spaces and files in general
