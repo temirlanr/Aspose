@@ -32,12 +32,12 @@ namespace AsposeTask
         /// </summary>
         public ComparisonAlgorithm Algorithm { get; set; }
         /// <summary>
-        /// Specifies how many differences to detect
+        /// Specifies what is the maximum number of differences to detect
         /// </summary>
         /// <remarks>
         /// Choose 0 or negative value for no maximum
         /// </remarks>
-        public int NumberOfDiff { get; set; }
+        public int MaxNumberOfDiff { get; set; }
         /// <summary>
         /// Specifies the Error Tolerance when comparing images
         /// </summary>
@@ -54,15 +54,23 @@ namespace AsposeTask
         /// </summary>
         public int SizeOfDiff { get; set; }
 
+        /// <summary>
+        /// Regular Constructor where you need to specify the configuration by yourself
+        /// </summary>
+        /// <param name="algorithm"></param>
+        /// <param name="maxNumberOfDiff"></param>
+        /// <param name="errorTolerance"></param>
+        /// <param name="depthOfDFS"></param>
+        /// <param name="sizeOfDiff"></param>
         public ImageProcessor
-            (ComparisonAlgorithm algorithm = ComparisonAlgorithm.RGB,
-            int numberOfDiff = 0,
-            int errorTolerance = 8,
+            (ComparisonAlgorithm algorithm = ComparisonAlgorithm.ARGB,
+            int maxNumberOfDiff = 0,
+            int errorTolerance = 15,
             int depthOfDFS = 1,
-            int sizeOfDiff = 150)
+            int sizeOfDiff = 25)
         {
             Algorithm = algorithm;
-            NumberOfDiff = numberOfDiff;
+            MaxNumberOfDiff = maxNumberOfDiff;
             ErrorTolerance = errorTolerance;
             DepthOfDFS = depthOfDFS;
             SizeOfDiff = sizeOfDiff;
@@ -104,6 +112,8 @@ namespace AsposeTask
             {
                 throw new ArgumentException("Images should be of the same size pixel-wise.");
             }
+
+            //ValidateAutoAdjustment(img1, img2);
 
             await foreach (var cluster in CompareTwoImagesAsync(img1, img2))
             {
@@ -268,9 +278,9 @@ namespace AsposeTask
             {
                 for(int j = 5; j < img1.Height - 5; j++)
                 {
-                    if(NumberOfDiff > 0)
+                    if(MaxNumberOfDiff > 0)
                     {
-                        if(size >= NumberOfDiff)
+                        if(size >= MaxNumberOfDiff)
                         {
                             continue;
                         }
@@ -308,9 +318,9 @@ namespace AsposeTask
             {
                 for (int j = 5; j < img1.Height - 5; j++)
                 {
-                    if (NumberOfDiff > 0)
+                    if (MaxNumberOfDiff > 0)
                     {
-                        if (result.Count >= NumberOfDiff)
+                        if (result.Count >= MaxNumberOfDiff)
                         {
                             continue;
                         }

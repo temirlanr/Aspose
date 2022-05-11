@@ -25,7 +25,7 @@ namespace AsposeTask
         /// <remarks>
         /// Choose 0 or negative value for no maximum
         /// </remarks>
-        int NumberOfDiff { get; set; }
+        int MaxNumberOfDiff { get; set; }
         /// <summary>
         /// Specifies the Error Tolerance when comparing images
         /// </summary>

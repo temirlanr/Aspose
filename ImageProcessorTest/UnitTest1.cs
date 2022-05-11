@@ -21,7 +21,7 @@ namespace ImageProcessorTest
         [Test]
         public async Task CompareTwoImagesAsync_CheckPixelClusters()
         {
-            processor.NumberOfDiff = 4;
+            processor.MaxNumberOfDiff = 4;
             processor.SizeOfDiff = 100;
 
             Bitmap img1A = new Bitmap(Path.Combine(TestContext.CurrentContext.TestDirectory, "Samples", "Sample_1_A.jpg"));
@@ -42,7 +42,7 @@ namespace ImageProcessorTest
         [Test]
         public void CompareTwoImages_CheckPixelClusters()
         {
-            processor.NumberOfDiff = 4;
+            processor.MaxNumberOfDiff = 4;
             processor.SizeOfDiff = 150;
 
             Bitmap img1A = new Bitmap(Path.Combine(TestContext.CurrentContext.TestDirectory, "Samples", "Sample_1_A.jpg"));
