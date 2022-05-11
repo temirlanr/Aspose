@@ -18,7 +18,7 @@ Regarding the algorithm, it is pretty straightforward:
 * I created a PixelCluster object for better working with those areas.
 * Recursive Depth First Search algorithm is implemented with clustering pixel locations into PixelCluster objects.
 * PixelCluster objects returned to main method that writes all the info about those clusters and saves 2 images into local drive that have differences surrounded by red rectangles.
-* There are to modes: synchronous and asynchronous, so you can choose. For better performance I recommend the asynchronous. Also asynchronous mode works with IAsyncEnumerable, which outputs PixelCluster objects "on the fly", meaning you see info about them as soon as they are detected.
+* There are two modes: synchronous and asynchronous, so you can choose. For better performance I recommend the asynchronous. Also asynchronous mode works with IAsyncEnumerable, which outputs PixelCluster objects "on the fly", meaning you see info about them as soon as they are detected.
 
 ## API Reference and Documentation is provided within the code
 
