@@ -32,7 +32,7 @@ Regarding the algorithm, it is pretty straightforward:
 ### Weak features
 
 * Exception handling
-* * For example, the Stack Overflow can easily happen when not configured properly
+** For example, the Stack Overflow can easily happen when not configured properly
 * Tests didn't cover all of the functionality
 * Works only on Windows
 * Maybe hard to understand what property is for or method does
