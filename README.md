@@ -39,7 +39,7 @@ Regarding the algorithm, it is pretty straightforward:
 
 It was my first project on image processing, so it was, indeed, very hard and interesting to work on it. Also, I understand that there probably are many mistakes that an experienced developer would easily point out. I, myself, think that it could be improved by:
 * Better implementation of asynchronous methods
-* Better design
+* Better design (immutablity included)
 * Research on how to work with images, colors, color spaces and files in general
 * Think of an algorithm that wouldn't use that much space
 * Exception handling and proper validation
